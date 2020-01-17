@@ -59,13 +59,14 @@ Now, it is time to make sure our APIGateway is deployed to the internet and is i
 1. Open [API Gateway](https://console.aws.amazon.com/apigateway). See: *Services v* in the top left corner and search for *API Gateway*.
 2. Click on your API, *fact-api-staging*.
 3. On the left, click *stages*. This will bring up your deployment stages. 
-4. The stage name from your template parameter will be shown. In my case, it is called *staging*. Click this.
-5. You will see the invoke URL. This is the public HTTPS url. Copy this URL.
-6. Since we made this a GET request, let's use a tool locally to verify this. If you are on a *nix system, use curl:
+4. The stage name from your template parameter will be shown. In my case, it is called *staging*. Open this dropdown.
+5. Under the stage name, you will see the deployed resources. There will be a /fact GET resources. Click this resource GET.
+6. You will see the invoke URL. This is the public HTTPS url. Copy this URL.
+7. Since we made this a GET request, let's use a tool locally to verify this. If you are on a *nix system, use curl:
 
     ```
-    curl -X GET https://usc3ya14r5.execute-api.us-east-1.amazonaws.com/staging/
+    curl -X GET https://usc3ya14r5.execute-api.us-east-1.amazonaws.com/staging/fact
     ```
     Or feel free to use any tool that works for you! Web browsers also work, so you can simply click the link. 
     **Be sure to replace the url above with your own.**
-7. Once you are seeing a random fact, you are ready to go to the next section. [Click here](../Section2)
+8. Once you are seeing a random fact, you are ready to go to the next section. [Click here](../Section2)
