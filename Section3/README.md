@@ -11,33 +11,24 @@ In this section, you will set up an Alexa-Hosted Fact skill. You will learn some
 Now that we have our public API and our basic fact skill up and running, we can now integrate our Alexa Service into our Fact Service to vend the fact.
 
 1. Open *Code* tab in your Alexa skill console. 
-2. Let's make a POST client. Create a new file in the lambda folder. You can right click on the lambda directory and select *Create File*. Name this `post_http.js`
+2. Let's make a GET client. Create a new file in the lambda folder. You can right click on the lambda directory and select *Create File*. Name this `get_http.js`
 3. Drop the following code into this file:
     ```javascript
     const https = require("https");
 
-    module.exports = function (baseURL, urlPath) {
-        var options = {
-            hostname: baseURL,
-            port: 443,
-            path: urlPath,
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': "*/*"
-            }
-        };
-    
+    module.exports = function (url) {
         return new Promise((resolve, reject) => {
-            var req = https.request(options, (response) => {
+            https.get(url, response => {
                 const { statusCode } = response;
                 const contentType = response.headers['content-type'];
 
                 let error;
                 if (statusCode !== 200) {
-                    error = new Error(`Request Failed. Status: ${statusCode}`);
-                } else if (!/^.*\/json/.test(contentType)) {
-                    error = new Error('Invalid content-type' + `Expected application/json but got ${contentType}`);
+                    error = new Error(`Request Failed.\n${statusCode}`);
+                } else if (!/^application\/json/.test(contentType)) {
+                    error = new Error('Invalid content-type' + 
+                        `Expected application/json but got ${contentType}`);
+                    
                 }
 
                 if (error) {
@@ -45,34 +36,33 @@ Now that we have our public API and our basic fact skill up and running, we can 
                     reject(error)
                 }
 
+                response.setEncoding('utf8');
+
                 let rawData = '';
                 response.on('data', chunk => { rawData += chunk });
 
                 response.on('end', () => {
-                    resolve(rawData);
+                    resolve(JSON.parse(rawData));
                 });
+
             });
-        
-            req.end();
         });
     }
     ```
     This function is simply returning a promise which will fail if there is a non-200 status code or the response is not JSON. Otherwise it will return our random fact string.
-1. Now, let's use this code in our index.js. Switch to that file now.
-2. Import the post_http client. Add this line to the top of your file. `const httpPost = require('./post_http.js');`
-3. Delete the `const data = [...]` object since our datastore is S3.
-4. In the `GetNewFactHandler.handle()` method, remove all of the code:
+4. Now, let's use this code in our index.js. Switch to that file now.
+5. Import the get_http client. Add this line to the top of your file. `const httpGet = require('./get_http.js');`
+6. Delete the `const data = [...]` object since our datastore is S3.
+7. In the `GetNewFactHandler.handle()` method, remove all of the code:
     ```javascript
         const factArr = data;
         const factIndex = Math.floor(Math.random() * factArr.length);
         const randomFact = factArr[factIndex];
     ```
-8. Now, let's use our POST client to make a call to our server and store this in const randomFact. Add the following to your `GetNewFactHandler.handle()` method:
+8. Now, let's use our GET client to make a call to our server and store this in const randomFact. Add the following to your `GetNewFactHandler.handle()` method:
     ```javascript
-        const url = "usc3ya14r5.execute-api.us-east-1.amazonaws.com";
-        const path = "/staging/";
-
-        const randomFact = await httpPost(url, path);
+        const url = "https://pgxrhxwiz2.execute-api.us-east-1.amazonaws.com/staging/fact";
+        const randomFact = await httpGet(url);
     ```
     Replace the url and path with the specifics from your hostname and path configuration for your AWS Microservice.
 9. *Deploy* the code.
@@ -81,4 +71,4 @@ Now that we have our public API and our basic fact skill up and running, we can 
 
 Congratulations! You are a full stack engineer now! You created a random fact microservice, an Alexa Skill, and hooked them together to create a random fact skill. 
 
-I hope this was a helpful tutorial. Feel free to send feedback on Twitter to @JoeMoCode. Happy Hacking!
+I hope this was a helpful tutorial. Feel free to send feedback on Twitter to @JoeMoCode or @sleepydeveloper. Happy Hacking!

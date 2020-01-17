@@ -5,7 +5,7 @@
 /* eslint-disable  no-console */
 
 const Alexa = require('ask-sdk-core');
-const httpPost = require('./post_http.js');
+const httpGet = require('./get_http.js');
 
 const SKILL_NAME = 'Space Facts';
 const GET_FACT_MESSAGE = 'Here\'s your fact: ';
@@ -21,10 +21,8 @@ const GetNewFactHandler = {
         && request.intent.name === 'GetNewFactIntent');
   },
   async handle(handlerInput) {
-    const url = "usc3ya14r5.execute-api.us-east-1.amazonaws.com";
-    const path = "/staging/";
-
-    const randomFact = await httpPost(url, path);
+    const url = "https://pgxrhxwiz2.execute-api.us-east-1.amazonaws.com/staging/fact";
+    const randomFact = await httpGet(url);
 
     const speechOutput = GET_FACT_MESSAGE + randomFact;
 
