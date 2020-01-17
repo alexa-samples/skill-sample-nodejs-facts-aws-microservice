@@ -1,0 +1,18 @@
+{
+    "manifest": {
+      "apis": {
+        "custom": {
+          "endpoint": {
+            "uri": "LAMBDA_ARN"
+          }
+        }
+      },
+      "publishingInformation": {
+        "locales": {
+          "en-US": {
+            "name": "Simple Fact Skill with API Call"
+          }
+        }
+      }
+    }
+  }

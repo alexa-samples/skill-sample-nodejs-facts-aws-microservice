@@ -1,0 +1,40 @@
+{
+    "interactionModel": {
+      "languageModel": {
+        "invocationName": "space facts",
+        "intents": [
+          {
+            "name": "AMAZON.CancelIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.HelpIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.StopIntent",
+            "samples": []
+          },
+          {
+            "name": "AMAZON.FallbackIntent",
+            "samples": []
+          },
+          {
+            "name": "GetNewFactIntent",
+            "samples": [
+              "a fact",
+              "a space fact",
+              "tell me a fact",
+              "give me a fact",
+              "tell me trivia",
+              "give me trivia",
+              "give me some information",
+              "tell me something",
+              "give me something"
+            ],
+            "slots": []
+          }
+        ]
+      }
+    }
+  }
