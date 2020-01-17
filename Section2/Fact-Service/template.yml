@@ -17,7 +17,7 @@ Resources:
   APIGatewayServiceLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub '${FactType}-Vendor-Lambda-${Stage}'
+      FunctionName: !Sub 'Fact-Vendor-Lambda-${Stage}'
       Handler: factVendorLambda.get
       CodeUri: s3://fact-service-build-info/fact-service.zip
       Runtime: nodejs10.x
@@ -30,7 +30,7 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Description: API for the serverless fact service.
-      Name: !Sub 'fact-api-${Stage}'
+      Name: !Sub '${FactType}-fact-api-${Stage}'
   APIGatewayResourcesFact:
     Type: AWS::ApiGateway::Resource
     Properties: 
@@ -45,8 +45,8 @@ Resources:
       - APIGatewayResourcesFact
     Properties:
       AuthorizationType: "NONE"
-      HttpMethod: "POST"
-      OperationName: postRoot
+      HttpMethod: "GET"
+      OperationName: getFact
       Integration:
         IntegrationHttpMethod: "POST"
         Type: "AWS_PROXY"
@@ -55,6 +55,17 @@ Resources:
           - lambdaArn: !GetAtt "APIGatewayServiceLambda.Arn"
       ResourceId: !Ref "APIGatewayResourcesFact"
       RestApiId: !Ref "FactServiceAPIGateway"
+  APIGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      Description: !Sub "${Stage} Stage"
+      RestApiId: !Ref FactServiceAPIGateway
+      DeploymentId: !Ref APIGatewayDeployment
+      Variables:
+        Stack: !Sub "${Stage}"
+      MethodSettings:
+        - ResourcePath: /fact
+          HttpMethod: GET
   APIGatewayDeployment:
     Type: "AWS::ApiGateway::Deployment"
     DependsOn:
@@ -88,7 +99,7 @@ Resources:
       Policies:
       - PolicyDocument:
           Statement:
-          - Action: ['cloudwatch:*', 'logs:*', 'lambda:*']
+          - Action: ['cloudwatch:*', 'logs:*', 's3:GetObject', 'lambda:*']
             Effect: Allow
             Resource: '*'
           Version: '2012-10-17'
@@ -103,7 +114,7 @@ Resources:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt "APIGatewayServiceLambda.Arn"
       Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${FactServiceAPIGateway}/*/POST/"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${FactServiceAPIGateway}/*/GET/*"
 Outputs:
   apiGatewayInvokeURL:
     Value: !Sub "https://${FactServiceAPIGateway}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"

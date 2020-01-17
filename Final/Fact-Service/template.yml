@@ -33,7 +33,7 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Description: API for the serverless fact service.
-      Name: !Sub 'fact-api-${Stage}'
+      Name: !Sub '${FactType}-fact-api-${Stage}'
   APIGatewayResourcesFact:
     Type: AWS::ApiGateway::Resource
     Properties: 
@@ -48,7 +48,7 @@ Resources:
       - APIGatewayResourcesFact
     Properties:
       AuthorizationType: "NONE"
-      HttpMethod: "POST"
+      HttpMethod: "GET"
       OperationName: getFact
       Integration:
         IntegrationHttpMethod: "POST"
@@ -58,17 +58,17 @@ Resources:
           - lambdaArn: !GetAtt "APIGatewayServiceLambda.Arn"
       ResourceId: !Ref "APIGatewayResourcesFact"
       RestApiId: !Ref "FactServiceAPIGateway"
-  # APIGatewayStage:
-  #   Type: AWS::ApiGateway::Stage
-  #   Properties:
-  #     Description: !Sub "${Stage} Stage"
-  #     RestApiId: !Ref FactServiceAPIGateway
-  #     DeploymentId: !Ref APIGatewayDeployment
-  #     Variables:
-  #       Stack: !Sub "${Stage}"
-  #     MethodSettings:
-  #       - ResourcePath: /fact
-  #         HttpMethod: GET
+  APIGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      Description: !Sub "${Stage} Stage"
+      RestApiId: !Ref FactServiceAPIGateway
+      DeploymentId: !Ref APIGatewayDeployment
+      Variables:
+        Stack: !Sub "${Stage}"
+      MethodSettings:
+        - ResourcePath: /fact
+          HttpMethod: GET
   APIGatewayDeployment:
     Type: "AWS::ApiGateway::Deployment"
     DependsOn:
@@ -121,7 +121,7 @@ Resources:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt "APIGatewayServiceLambda.Arn"
       Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${FactServiceAPIGateway}/*/POST/"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${FactServiceAPIGateway}/*/GET/*"
 Outputs:
   apiGatewayInvokeURL:
     Value: !Sub "https://${FactServiceAPIGateway}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"

@@ -11,6 +11,7 @@ Parameters:
     Type: String
     Description: The name for a project pipeline stage, such as Staging or Prod, for which resources are provisioned and deployed.
     Default: staging
+
 Resources:
   #Compute resources
   APIGatewayServiceLambda:
@@ -18,21 +19,7 @@ Resources:
     Properties:
       FunctionName: !Sub 'Fact-Vendor-Lambda-${Stage}'
       Handler: factVendorLambda.get
-      CodeUri: s3://fact-service-build-info/Archive.zip
-      Runtime: nodejs10.x
-      Environment:
-        Variables:
-          S3BucketName: {Ref: FactBucket}
-      Role:
-        Fn::GetAtt:
-        - LambdaExecutionRole
-        - Arn
-  ClientLambda: #TODO Remove this and have them create it in the UI.
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub 'Client-Lambda-${Stage}'
-      CodeUri: s3://fact-service-build-info/Archive.zip
-      Handler: clientLambda.start
+      CodeUri: s3://fact-service-build-info/fact-service.zip
       Runtime: nodejs10.x
       Role:
         Fn::GetAtt:
@@ -43,12 +30,22 @@ Resources:
     Type: AWS::ApiGateway::RestApi
     Properties:
       Description: API for the serverless fact service.
-      Name: !Sub 'fact-api-${Stage}'
+      Name: !Sub '${FactType}-fact-api-${Stage}'
+  APIGatewayResourcesFact:
+    Type: AWS::ApiGateway::Resource
+    Properties: 
+      ParentId: !GetAtt 
+        - FactServiceAPIGateway
+        - RootResourceId
+      PathPart: fact
+      RestApiId: !Ref "FactServiceAPIGateway"
   APIGatewayMethod:
     Type: "AWS::ApiGateway::Method"
+    DependsOn: 
+      - APIGatewayResourcesFact
     Properties:
       AuthorizationType: "NONE"
-      HttpMethod: "POST"
+      HttpMethod: "GET"
       OperationName: getFact
       Integration:
         IntegrationHttpMethod: "POST"
@@ -56,12 +53,24 @@ Resources:
         Uri: !Sub
           - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
           - lambdaArn: !GetAtt "APIGatewayServiceLambda.Arn"
-      ResourceId: !GetAtt "FactServiceAPIGateway.RootResourceId"
+      ResourceId: !Ref "APIGatewayResourcesFact"
       RestApiId: !Ref "FactServiceAPIGateway"
+  APIGatewayStage:
+    Type: AWS::ApiGateway::Stage
+    Properties:
+      Description: !Sub "${Stage} Stage"
+      RestApiId: !Ref FactServiceAPIGateway
+      DeploymentId: !Ref APIGatewayDeployment
+      Variables:
+        Stack: !Sub "${Stage}"
+      MethodSettings:
+        - ResourcePath: /fact
+          HttpMethod: GET
   APIGatewayDeployment:
     Type: "AWS::ApiGateway::Deployment"
     DependsOn:
       - "APIGatewayMethod"
+      - "APIGatewayResourcesFact"
     Properties:
       RestApiId: !Ref "FactServiceAPIGateway"
       StageName: !Sub "${Stage}"
@@ -86,11 +95,10 @@ Resources:
             Service: [lambda.amazonaws.com]
           Action: 
             - sts:AssumeRole
-      # Path: /
       Policies:
       - PolicyDocument:
           Statement:
-          - Action: ['cloudwatch:*', 'logs:*', 's3:*', 'lambda:*']
+          - Action: ['cloudwatch:*', 'logs:*', 's3:GetObject', 'lambda:*']
             Effect: Allow
             Resource: '*'
           Version: '2012-10-17'
@@ -98,11 +106,14 @@ Resources:
   #Permissions
   lambdaApiGatewayInvoke:
     Type: "AWS::Lambda::Permission"
+    DependsOn: 
+      - APIGatewayServiceLambda
+      - FactServiceAPIGateway
     Properties:
       Action: "lambda:InvokeFunction"
       FunctionName: !GetAtt "APIGatewayServiceLambda.Arn"
       Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${FactServiceAPIGateway}/*/POST/"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${FactServiceAPIGateway}/*/GET/*"
 Outputs:
   apiGatewayInvokeURL:
     Value: !Sub "https://${FactServiceAPIGateway}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
