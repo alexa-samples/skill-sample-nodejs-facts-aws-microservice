@@ -3,17 +3,6 @@
 // Licensed under the Amazon Software License  http://aws.amazon.com/asl/
 'use strict';
 
-//Set up AWS Client
-const AWS = require('aws-sdk');
-AWS.config.update(
-    {
-        region: 'us-east-1'
-    }
-);
-const S3 = new AWS.S3();
-
-const FACTS_KEY = "facts.json";
-
 exports.get = async function(event, context, callback) {
     const data = [
         'A year on Mercury is just 88 days long.',
