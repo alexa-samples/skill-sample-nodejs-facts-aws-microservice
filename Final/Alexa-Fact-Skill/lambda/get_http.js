@@ -12,7 +12,7 @@ module.exports = function (url) {
             let error;
             if (statusCode !== 200) {
                 error = new Error(`Request Failed.\n${statusCode}`);
-            } else if (!/^application\/json/.test(contentType)) {
+            } else if (!/^.*\/json/.test(contentType)) {
                 error = new Error('Invalid content-type' + 
                     `Expected application/json but got ${contentType}`);
                 
