@@ -25,7 +25,7 @@ Now that we have our public API and our basic fact skill up and running, we can 
                 let error;
                 if (statusCode !== 200) {
                     error = new Error(`Request Failed.\n${statusCode}`);
-                } else if (!/^application\/json/.test(contentType)) {
+                } else if (!/^.*\/json/.test(contentType)) {
                     error = new Error('Invalid content-type' + 
                         `Expected application/json but got ${contentType}`);
                     
@@ -64,11 +64,15 @@ Now that we have our public API and our basic fact skill up and running, we can 
         const url = "https://pgxrhxwiz2.execute-api.us-east-1.amazonaws.com/staging/fact";
         const randomFact = await httpGet(url);
     ```
-    Replace the url and path with the specifics from your hostname and path configuration for your AWS Microservice.
-9. *Deploy* the code.
-10. Switch to the *Test* tab in the developer console. 
-11. Test your skill! Make sure it is giving you random facts.
+    **Replace the url and path with the specifics from your hostname and path configuration for your AWS Microservice.**
+9. Since you're using `await`, you'll need to make sure that the **handle** function is **asynchronous**.
+    ```
+    async handle(handerInput)
+    ```
+10. *Deploy* the code.
+11. Switch to the *Test* tab in the developer console. 
+12. Test your skill! Make sure it is giving you random facts.
 
 Congratulations! You are a full stack engineer now! You created a random fact microservice, an Alexa Skill, and hooked them together to create a random fact skill. 
 
-I hope this was a helpful tutorial. Feel free to send feedback on Twitter to @JoeMoCode or @sleepydeveloper. Happy Hacking!
+I hope this was a helpful tutorial. Feel free to send feedback on Twitter to [@JoeMoCode](https://twitter.com/JoeMoCode) or [@sleepydeveloper](https://twitter.com/SleepyDeveloper). Happy Hacking!
