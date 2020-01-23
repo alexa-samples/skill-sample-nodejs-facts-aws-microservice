@@ -13,7 +13,7 @@ Since we are making a service to vend facts, take a minute or five to think of w
 
 Most of our infrastructure is modeled using [AWS Cloudformation](https://aws.amazon.com/cloudformation/) in the file, template.yml which uses the [YAML format](https://en.wikipedia.org/wiki/YAML). We are going to run this file in order to create our base set of resources for the stack.
 
-1. Log into [AWS](https://console.aws.amazon.com/console/home).
+1. Log into [AWS](https://console.aws.amazon.com/console/home). Make sure you are in the us-east-1 (virginia) region.
 2. Open [Cloudformation](https://console.aws.amazon.com/cloudformation/home). See: *Services v* in the top left corner and search for *Cloudformation*.
 3. Click *Create stack* > *With new resources (standard)*
 4. This will bring you to the Create stack page *Specify template* step. 
