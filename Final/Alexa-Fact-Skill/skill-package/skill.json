@@ -1,0 +1,14 @@
+{
+  "manifest": {
+    "apis": {
+      "custom": {}
+    },
+    "publishingInformation": {
+      "locales": {
+        "en-US": {
+          "name": "Simple Fact Skill with API Call"
+        }
+      }
+    }
+  }
+}
